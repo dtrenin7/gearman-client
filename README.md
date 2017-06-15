@@ -1,18 +1,20 @@
+![picture alt](http://rs277.pbsrc.com/albums/kk66/manbat_bucket/GearMan.gif~c200 "Gearman")
+
 # gearman-client
 
-[WTF]
-Multitreaded Gearman client with some user emulation.
+## [WTF]
+Multithreaded Gearman client with some user emulation.
 
-[REQUIRED]
+## [REQUIRED]
 linux
 CMAKE 3.X
 GCC 4.5+
 libgearman 1.12+
 
-[HOW TO BUILD]
+## [BUILD]
 ./build.sh
 
-[HOW TO RUN]
+## [RUN]
 ./run.sh
 
 [RUN OPTIONS]
