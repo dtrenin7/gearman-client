@@ -42,12 +42,13 @@ bool LoadFile(const char* filePath, std::vector<char>& content) {
 struct worker_data {
     int thread;
     int ms, delay;
-    char** argv;
+    char* servers;
+    char* function;
     std::vector<char>* input;
     worker_data() {
         delay = ms = thread = 0;
         input = NULL;
-        argv = NULL;
+        servers = function = NULL;
     };
 };
 
@@ -59,7 +60,7 @@ extern "C" void* worker(void* data) {
 
     gearman_client_st *client = gearman_client_create(NULL);
 
-    gearman_return_t ret = gearman_client_add_server(client, wd->argv[1], atoi(wd->argv[2]));
+    gearman_return_t ret = gearman_client_add_servers(client, wd->servers);
     if (gearman_failed(ret))
     {
         fprintf(stderr, "Can't create gearman client\n");
@@ -73,7 +74,7 @@ extern "C" void* worker(void* data) {
 
     msTimer timer;
     gearman_task_st *task = gearman_execute(client,
-                                         wd->argv[3], strlen(wd->argv[3]),  // function
+                                         wd->function, strlen(wd->function),  // function
                                          NULL, 0,  // no unique value provided
                                          NULL,
                                          &value, 0);
@@ -112,29 +113,30 @@ extern "C" void* worker(void* data) {
 int main(int argc, char* argv[])
 {
     if(argc < 5) {
-        printf("USAGE: gearman-client <host> <port> <function> <input_file> <num_threads = opt> <delay (ms) before nest thread = opt>\n");
+        printf("USAGE: gearman-client <servers> <function> <input_file> <num_threads = opt> <delay (ms) before nest thread = opt>\n");
         return EXIT_FAILURE;
     }
 
     std::vector<char> input;
-    if(!LoadFile(argv[4], input)) {
+    if(!LoadFile(argv[3], input)) {
         fprintf(stderr, "Can't load file %s\n", argv[4]);
         return EXIT_FAILURE;
     }
     printf("Input file %s with size %lu loaded.\n", argv[4], input.size());
 
     int num_threads = 1;
-    if(argc > 5)
-        num_threads = atoi(argv[5]);
+    if(argc > 4)
+        num_threads = atoi(argv[4]);
     int delay = 0;
-    if(argc > 6)
-        delay = atoi(argv[6]) * 1000;
+    if(argc > 5)
+        delay = atoi(argv[5]) * 1000;
     std::vector<worker_data> data(num_threads);
     std::vector<pthread_t> threads(num_threads);
     for(int i = 0; i < num_threads; i++) {
         data[i].thread = i;
         data[i].input =& input;
-        data[i].argv = (char**)argv;
+        data[i].servers = argv[1];
+        data[i].function = argv[2];
         if(delay)
             data[i].delay = rand() % delay;
         int created = pthread_create(&threads[i], NULL, worker, (void *)&data[i]);
