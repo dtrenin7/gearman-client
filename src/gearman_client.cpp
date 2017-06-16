@@ -112,7 +112,7 @@ extern "C" void* worker(void* data) {
 
 int main(int argc, char* argv[])
 {
-    if(argc < 5) {
+    if(argc < 4) {
         printf("USAGE: gearman-client <servers> <function> <input_file> <num_threads = opt> <delay (ms) before nest thread = opt>\n");
         return EXIT_FAILURE;
     }
