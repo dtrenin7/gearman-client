@@ -28,7 +28,7 @@ set(LIBS ${LIBS} gearman pthread)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-# Create execuateble (UNCOMMENT THIS IF YOU WANT TO BUILD C++ CLIENT)
+# Create executable (UNCOMMENT THIS IF YOU WANT TO BUILD C++ CLIENT)
 #add_executable(gearman-client ${SOURCE_FILES} )
 
 # Create shared library  (UNCOMMENT THIS IF YOU WANT TO BUILD C++ LIBRARY FOR PYTHON CLIENT)

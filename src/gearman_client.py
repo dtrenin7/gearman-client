@@ -13,7 +13,7 @@ gearman_free.restype = None
 def gearman_client(servers, function, data, delay):
     cservers = c_char_p(servers.encode('utf-8'))
     cfunction = c_char_p(function.encode('utf-8'))
-    print(len(data))
+    #print(len(data))
     rsize = c_int()
     raw_ptr = gearman_call(cservers, cfunction, c_char_p(data), c_ulong(len(data)), c_int(delay), rsize)
     if rsize.value == 0:
