@@ -3,19 +3,25 @@
 ![picture alt](http://rs277.pbsrc.com/albums/kk66/manbat_bucket/GearMan.gif~c200 "Gearman")
 
 ## [WTF]
-Multithreaded Gearman client with some user emulation.
+1. Multithreaded Gearman client (C++) with some user emulation
+2. Python 3.X wrapper over C++ client library
 
 ## [REQUIRED]
 linux
 CMAKE 3.X
 GCC 4.5+
 libgearman 1.12+
+python 3.X
 
 ## [BUILD]
 ./build.sh
+WARNING! You can build C++ lib or C++ client only separately (see comments in CMakeLists.txt)
 
 ## [RUN]
+### [C++]
 ./run.sh
+### [Python]
+./run_py.sh
 
 ## [OPTIONS]
 gearman-client host port function file threads delay

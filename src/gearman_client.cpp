@@ -44,11 +44,13 @@ struct worker_data {
     int ms, delay;
     char* servers;
     char* function;
-    std::vector<char>* input;
+    char* input;
+    size_t size, rsize;
     worker_data() {
         delay = ms = thread = 0;
         input = NULL;
         servers = function = NULL;
+        size = rsize = 0;
     };
 };
 
@@ -69,7 +71,7 @@ extern "C" void* worker(void* data) {
     }
     //printf("gearman_client_add_server(%s, %d) DONE\n", wd->argv[1], atoi(wd->argv[2]));
 
-    gearman_argument_t value = gearman_argument_make(0, 0, &(*wd->input)[0], wd->input->size());
+    gearman_argument_t value = gearman_argument_make(0, 0, wd->input, wd->size);
     //printf("gearman_argument_make() DONE\n");
 
     msTimer timer;
@@ -94,6 +96,16 @@ extern "C" void* worker(void* data) {
     {
         // Make use of value
         gearman_result_st *result = gearman_task_result(task);
+        const char* value = gearman_result_value(result);
+        if( value ) {
+            int len = strlen(value);
+            if( len ) {
+                data = malloc(len + 1);
+                memcpy(data, value, len);
+                ((char*)data)[len] = 0;
+                wd->rsize = (size_t)len;
+            }
+        }
 //        if(!wd->thread) // print value only for first
 //            printf("%s = %.*s\n", wd->argv[3], (int)gearman_result_size(result), gearman_result_value(result));
     }
@@ -113,7 +125,7 @@ extern "C" void* worker(void* data) {
 int main(int argc, char* argv[])
 {
     if(argc < 4) {
-        printf("USAGE: gearman-client <servers> <function> <input_file> <num_threads = opt> <delay (ms) before nest thread = opt>\n");
+        printf("USAGE: gearman-client <servers> <function> <input_file> <num_threads = opt> <delay (ms) before next thread = opt>\n");
         return EXIT_FAILURE;
     }
 
@@ -134,7 +146,8 @@ int main(int argc, char* argv[])
     std::vector<pthread_t> threads(num_threads);
     for(int i = 0; i < num_threads; i++) {
         data[i].thread = i;
-        data[i].input =& input;
+        data[i].input = &input[0];
+        data[i].size = input.size();
         data[i].servers = argv[1];
         data[i].function = argv[2];
         if(delay)
@@ -172,4 +185,23 @@ int main(int argc, char* argv[])
     printf("\nSUCCEEDED %d of %d\nMIN = %d MAX = %d AVERAGE = %d\n", succeeded, num_threads, min_ms, max_ms, average_ms);
 
     return EXIT_SUCCESS;
+}
+
+#define LIBEXPORT __attribute__ ((visibility ("default")))
+
+extern "C" LIBEXPORT void* gearman_call(char* servers, char* function, char* data, size_t size, int delay, size_t* rsize) {
+    worker_data wd;
+    wd.servers = servers;
+    wd.function = function;
+    wd.input = data;
+    wd.size = size;
+    wd.delay = delay;
+    void* res = worker((void*)&wd);
+    if( res && rsize )
+        *rsize = wd.rsize;
+    return res;
+}
+
+extern "C" LIBEXPORT void gearman_free(void* result) {
+    free(result);
 }
