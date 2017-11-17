@@ -97,8 +97,8 @@ extern "C" void* worker(void* data) {
                 wd->rsize = (size_t)len;
             }
         }
-//        if(!wd->thread) // print value only for first
-//            printf("%s = %.*s\n", wd->argv[3], (int)gearman_result_size(result), gearman_result_value(result));
+        if(!wd->thread) // print value only for first
+            printf("%s = %.*s\n", wd->function, (int)gearman_result_size(result), gearman_result_value(result));
     }
     else {
         printf("ERROR: %s\n", gearman_strerror(task_ret));
@@ -122,10 +122,10 @@ int main(int argc, char* argv[])
 
     std::vector<char> input;
     if(!LoadFile(argv[3], input)) {
-        fprintf(stderr, "Can't load file %s\n", argv[4]);
+        fprintf(stderr, "Can't load file %s\n", argv[3]);
         return EXIT_FAILURE;
     }
-    printf("Input file %s with size %lu loaded.\n", argv[4], input.size());
+    printf("Input file %s with size %lu loaded.\n", argv[3], input.size());
 
     int num_threads = 1;
     if(argc > 4)
